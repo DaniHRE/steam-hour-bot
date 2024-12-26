@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"start": "tsc && node ./dist/index.js",
+		"start": "tsc && node --env-file-if-exists=.env ./dist/index.js",
 		"build": "tsc"
 	},
 	"devDependencies": {
