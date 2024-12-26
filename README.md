@@ -54,8 +54,6 @@ npm start
 
 The bot will log in to your Steam account and start running the games defined in `GAMES`.
 
-You will also see a `Hello, World!` message response on the HTTP endpoint.
-
 ### `!stats` Command
 
 Send the `!stats` command to the bot in a Steam chat to get information about:
