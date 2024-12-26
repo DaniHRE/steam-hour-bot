@@ -7,6 +7,7 @@ import { shuffleArray } from './utils';
 //Env Vars
 const STEAMUSER = process.env.STEAMUSER as string
 const STEAMPW = process.env.STEAMPW as string
+const STEAMOTP = process.env.STEAMOTP as string
 const GAMES = JSON.parse(process.env.GAMES as string) as number[];
 
 // Initialize Steam client
@@ -16,7 +17,7 @@ const client = new SteamUser();
 client.logOn({
     accountName: !STEAMUSER ? readlineSync.question("[ACCOUNT] Steam Username: ") : STEAMUSER,
     password: !STEAMPW ? readlineSync.question("[ACCOUNT] Steam Password: ") : STEAMPW,
-    twoFactorCode: readlineSync.question("[STEAM GUARD] Steam App Code: ")
+    twoFactorCode: !STEAMOTP ? readlineSync.question("[STEAM GUARD] Steam App Code: ") : STEAMOTP
 });
 
 client.on('loggedOn', () => {
