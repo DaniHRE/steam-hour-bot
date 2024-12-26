@@ -4,7 +4,6 @@ This project is a bot designed to interact with the Steam client and farm HOURS 
 
 ## Features
 
-- Automatic login to the Steam client.
 - Automatic replies based on predefined messages.
 - `!stats` command (in the chat with the logged-in account) to display information about:
   - Current time (GMT-3).
@@ -13,7 +12,7 @@ This project is a bot designed to interact with the Steam client and farm HOURS 
 
 ## Requirements
 
-- **Node.js** (version 16 or higher).
+- **Node.js** (version 20 or higher).
 - A valid Steam account.
 - Dependency libraries managed via `npm` or `yarn`.
 
