@@ -1,5 +1,4 @@
 import fs from 'fs';
-import { scriptStartTime } from '..';
 
 // Variables for logging
 const tstamp = Math.floor(Date.now() / 1000);
@@ -22,10 +21,10 @@ export const log = (message: string): void => {
 };
 
 // Utility function to shuffle an array
-export const shuffleArray = (array: any[]): any[] => {
+export const shuffleArray = (array: Array<number>): number[] => {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [array[i], array[j]] = [Number(array[j]), Number(array[i])];
     }
     return array;
 };
@@ -38,8 +37,8 @@ export const getTimeInGMT3 = (): string => {
 };
 
 // Function to calculate script uptime
-export const getScriptUptime = (): string => {
-    const elapsed = Date.now() - scriptStartTime;
+export const getScriptUptime = (startTime: number): string => {
+    const elapsed = Date.now() - startTime;
     const hours = Math.floor(elapsed / (1000 * 60 * 60));
     const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);

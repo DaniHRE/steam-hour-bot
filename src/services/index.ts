@@ -15,6 +15,7 @@ export const fetchGameNames = async (gameIds: number[]): Promise<{ [key: number]
                 // Acessa a propriedade dinamicamente usando o gameId
                 const gameData = response.data[gameId]?.data;
                 if (gameData) {
+                    log(`Loaded game data for ${gameData.name}`);
                     gameNames[gameId] = gameData.name; // Assume que 'name' é o nome do jogo
                 } else {
                     gameNames[gameId] = `Unknown Game (ID: ${gameId})`;
