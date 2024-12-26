@@ -14,7 +14,7 @@ This project is a bot designed to interact with the Steam client and farm HOURS 
 
 - **Node.js** (version 20 or higher).
 - A valid Steam account.
-- Dependency libraries managed via `npm` or `yarn`.
+- Dependency libraries managed via `npm` or `pnpm`.
 
 ## Installation
 
