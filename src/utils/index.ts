@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { scriptStartTime } from '..';
 
 // Variables for logging
 const tstamp = Math.floor(Date.now() / 1000);
@@ -27,4 +28,20 @@ export const shuffleArray = (array: any[]): any[] => {
         [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
+};
+
+// Function to get formatted time in GMT-3
+export const getTimeInGMT3 = (): string => {
+    const date = new Date();
+    date.setHours(date.getHours() - 3); // Adjust to GMT-3
+    return date.toISOString().replace('T', ' ').split('.')[0];
+};
+
+// Function to calculate script uptime
+export const getScriptUptime = (): string => {
+    const elapsed = Date.now() - scriptStartTime;
+    const hours = Math.floor(elapsed / (1000 * 60 * 60));
+    const minutes = Math.floor((elapsed % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+    return `${hours}h ${minutes}m ${seconds}s`;
 };

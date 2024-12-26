@@ -1,8 +1,9 @@
 // Import required modules
 import SteamUser from 'steam-user';
 import readlineSync from 'readline-sync';
-import { log } from './utils';
+import { getScriptUptime, getTimeInGMT3, log } from './utils';
 import { shuffleArray } from './utils';
+import { fetchGameNames } from './services';
 
 //Env Vars
 const STEAMUSER = process.env.STEAMUSER as string
@@ -10,14 +11,26 @@ const STEAMPW = process.env.STEAMPW as string
 const STEAMOTP = process.env.STEAMOTP as string
 const GAMES = JSON.parse(process.env.GAMES as string) as number[];
 
+// Pre-fetch game names at the start of the script
+let globalGameNames: { [key: number]: string } = {};
+const initializeGameNames = async () => {
+    globalGameNames = await fetchGameNames(GAMES);
+};
+
+// Initialize game names
+initializeGameNames().then(() => log("Game Names Initialized"));
+
 // Initialize Steam client
 const client = new SteamUser();
+
+// Track script start time
+export const scriptStartTime = Date.now();
 
 // Handle client login
 client.logOn({
     accountName: !STEAMUSER ? readlineSync.question("[ACCOUNT] Steam Username: ") : STEAMUSER,
     password: !STEAMPW ? readlineSync.question("[ACCOUNT] Steam Password: ") : STEAMPW,
-    twoFactorCode: !STEAMOTP ? readlineSync.question("[STEAM GUARD] Steam App Code: ") : STEAMOTP
+    // twoFactorCode: !STEAMOTP ? readlineSync.question("[STEAM GUARD] Steam App Code: ") : STEAMOTP
 });
 
 client.on('loggedOn', () => {
@@ -31,7 +44,7 @@ client.on('loggedOn', () => {
 // Handle friend messages
 // @ts-ignore due to wrong typing in library
 client.on('friendMessage', (steamID, message) => {
-    const replies: { [key: string]: string } = {
+    const conversationReplies: { [key: string]: string } = {
         "oi": "Eai, blz?",
         "jogar": "Bora, só deixa eu terminar essa.",
         "sim": "Pode crê",
@@ -50,12 +63,37 @@ client.on('friendMessage', (steamID, message) => {
         "qual seu nível?": "Eu diria que sou mediano! Depende do jogo também, e você?"
     };
 
+    // Define interaction replies
+    const interactionReplies: { [key: string]: () => string } = {
+        "!stats": () => {
+            const timeGMT3 = getTimeInGMT3();
+            const uptime = getScriptUptime();
+            const gamesList = Object.entries(globalGameNames)
+                .map(([id, name]) => `- ${name} (ID: ${id})`)
+                .join('\n');
+
+            console.log(`[STATS] Time (GMT-3): ${timeGMT3}`);
+            console.log(`[STATS] Uptime: ${uptime}`);
+            console.log(`[STATS] Games Running:\n${gamesList}`);
+
+            return `Stats:\n- Time (GMT-3): ${timeGMT3}\n- Uptime: ${uptime}\n- Games Running:\n${gamesList}`;
+        }
+    };
+
+    //Check if any interaction command is triggered in message
+    const foundInteraction = Object.keys(interactionReplies).find(key => message.toLowerCase().includes(key));
+    if (foundInteraction) {
+        // @ts-ignore due to wrong typing in library
+        client.chatMessage(steamID, interactionReplies[foundInteraction]());
+        return
+    }
+
     // Check if any reply key is a substring of the message
-    const foundKey = Object.keys(replies).find(key => message.toLowerCase().includes(key));
+    const foundKey = Object.keys(conversationReplies).find(key => message.toLowerCase().includes(key));
 
     if (foundKey) {
         // @ts-ignore due to wrong typing in library
-        client.chatMessage(steamID, replies[foundKey]);
+        client.chatMessage(steamID, conversationReplies[foundKey]);
     } else {
         // @ts-ignore due to wrong typing in library
         client.chatMessage(steamID, "Fala ai fdp");
