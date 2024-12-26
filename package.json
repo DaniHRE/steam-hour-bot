@@ -1,0 +1,16 @@
+{
+	"scripts": {
+		"start": "tsc && node ./dist/index.js",
+		"build": "tsc"
+	},
+	"devDependencies": {
+		"@types/node": "^22.10.2",
+		"@types/readline-sync": "^1.4.8",
+		"@types/steam-user": "^5.0.4"
+	},
+	"dependencies": {
+		"readline-sync": "^1.4.10",
+		"steam-user": "^5.2.0",
+		"typescript": "^5.7.2"
+	}
+}
