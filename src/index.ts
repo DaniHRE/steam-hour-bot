@@ -30,7 +30,7 @@ export const scriptStartTime = Date.now();
 client.logOn({
     accountName: !STEAMUSER ? readlineSync.question("[ACCOUNT] Steam Username: ") : STEAMUSER,
     password: !STEAMPW ? readlineSync.question("[ACCOUNT] Steam Password: ") : STEAMPW,
-    // twoFactorCode: !STEAMOTP ? readlineSync.question("[STEAM GUARD] Steam App Code: ") : STEAMOTP
+    twoFactorCode: !STEAMOTP ? readlineSync.question("[STEAM GUARD] Steam App Code: ") : STEAMOTP
 });
 
 client.on('loggedOn', () => {
