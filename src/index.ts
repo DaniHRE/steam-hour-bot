@@ -33,7 +33,7 @@ client.on('loggedOn', () => {
 
 // Handle friend messages
 // @ts-ignore due to wrong typing in library
-client.on('friendMessage', (steamID: any, message: any) => {
+client.on('friendMessage', (steamID, message) => {
     const replies: { [key: string]: string } = {
         "oi": "Eai, blz?",
         "jogar": "Bora, só deixa eu terminar essa.",
@@ -53,9 +53,15 @@ client.on('friendMessage', (steamID: any, message: any) => {
         "qual seu nível?": "Eu diria que sou mediano! Depende do jogo também, e você?"
     };
 
-    if (message in replies) {
+    // Check if any reply key is a substring of the message
+    const foundKey = Object.keys(replies).find(key => message.toLowerCase().includes(key));
+
+    if (foundKey) {
         // @ts-ignore due to wrong typing in library
-        client.chatMessage(steamID, replies[message]);
+        client.chatMessage(steamID, replies[foundKey]);
+    } else {
+        // @ts-ignore due to wrong typing in library
+        client.chatMessage(steamID, "Fala ai fdp");
     }
 });
 
