@@ -1,6 +1,7 @@
 // Import required modules
 import SteamUser from 'steam-user';
 import readlineSync from 'readline-sync';
+import express from 'express';
 import { getScriptUptime, getTimeInGMT3, log } from './utils';
 import { shuffleArray } from './utils';
 import { fetchGameNames } from './services';
@@ -19,6 +20,20 @@ const initializeGameNames = async () => {
 
 // Initialize game names
 initializeGameNames().then(() => log("Game Names Initialized"));
+
+// Create an Express app
+const app = express();
+const PORT = 3000;
+
+// Define a simple endpoint
+app.get('/', (req, res) => {
+    res.send('Hello, World!');
+});
+
+// Start the server
+app.listen(PORT, () => {
+    log(`HTTP server running on http://localhost:${PORT}`);
+});
 
 // Initialize Steam client
 const client = new SteamUser();
