@@ -2,31 +2,27 @@
 import SteamUser from 'steam-user';
 import readlineSync from 'readline-sync';
 import { log } from './utils';
-
-// Load settings
-import settings from '../config.json';
-
 import { shuffleArray } from './utils';
+
+//Env Vars
+const STEAMUSER = process.env.STEAMUSER as string
+const STEAMPW = process.env.STEAMPW as string
+const GAMES = JSON.parse(process.env.GAMES as string) as number[];
 
 // Initialize Steam client
 const client = new SteamUser();
 
-// Prompt user for login details
-const username: string = readlineSync.question("[ACCOUNT] Steam Username: ");
-const password: string = readlineSync.question("[ACCOUNT] Steam Password: ");
-const mobileCode: string = readlineSync.question("[STEAM GUARD] Steam App Code: ");
-
 // Handle client login
 client.logOn({
-    accountName: username,
-    password: password,
-    twoFactorCode: mobileCode
+    accountName: !STEAMUSER ? readlineSync.question("[ACCOUNT] Steam Username: ") : STEAMUSER,
+    password: !STEAMPW ? readlineSync.question("[ACCOUNT] Steam Password: ") : STEAMPW,
+    twoFactorCode: readlineSync.question("[STEAM GUARD] Steam App Code: ")
 });
 
 client.on('loggedOn', () => {
     log("Initializing Steam Client..");
     client.setPersona(SteamUser.EPersonaState.Online);
-    const shuffledGames = shuffleArray(settings.games);
+    const shuffledGames = shuffleArray(GAMES);
     client.gamesPlayed(shuffledGames);
     initializeGames(shuffledGames);
 });
