@@ -1,7 +1,8 @@
 {
 	"scripts": {
 		"start": "tsc && node --env-file=.env ./dist/index.js",
-		"build": "tsc"
+		"build": "tsc",
+		"deploy": "tsc && node ./dist/index.js"
 	},
 	"devDependencies": {
 		"@types/node": "^22.10.2",
