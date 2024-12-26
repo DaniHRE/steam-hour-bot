@@ -73,13 +73,6 @@ Send the `!stats` command to the bot in a Steam chat to get information about:
 └── README.md              # Project documentation
 ```
 
-## Dependencies
-
-- [steam-user](https://www.npmjs.com/package/steam-user) - Interface with the Steam client.
-- [readline-sync](https://www.npmjs.com/package/readline-sync) - Synchronous user input.
-- [axios](https://www.npmjs.com/package/axios) - HTTP requests for the Steam API.
-- [express](https://www.npmjs.com/package/express) - Basic HTTP server.
-
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for details.
