@@ -24,10 +24,6 @@ app.post('/start-bot', async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Client don't exist" });
     }
 
-    if (steamClient.isRunning()) {
-        return res.status(400).json({ error: "Bot is already running." });
-    }
-
     if (gamesId.length <= 30) {
         log(`Initializing ${gamesId.length} games...`);
     } else {
@@ -35,7 +31,12 @@ app.post('/start-bot', async (req: Request, res: Response) => {
     }
 
     const games = await fetchGameNames(gamesId);
-    steamClient.start(username, password, otp, games)
+    const isStarted = steamClient.start(username, password, otp, games)
+
+    if(!isStarted){
+        return res.status(400).json({ error: "Bot is already running." });
+    }
+
     res.status(200).send({ message: "Bot started successfully." });
 });
 
@@ -54,11 +55,11 @@ app.post('/stop-bot', (req: Request, res: Response) => {
         return res.status(400).json({ error: "Client don't exist" });
     }
 
-    if (!steamClient.isRunning()) {
-        return res.status(400).json({ error: "Bot is not running." });
-    }
+    const isStopped = steamClient.stop();
 
-    steamClient.stop();
+    if(!isStopped){
+        return res.status(400).json({ error: "Bot is not running."});
+    }
 
     res.json({ message: "Bot stopped successfully." });
 });

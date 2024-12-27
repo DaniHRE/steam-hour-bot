@@ -94,7 +94,9 @@ export default class SteamClient {
         });
     }
 
-    public start(username: string, password: string, otp: string, games: { [key: number]: string } = { 730: "Counter Striker 2" }) {
+    public start(username: string, password: string, otp: string, games: { [key: number]: string } = { 730: "Counter Striker 2" }): boolean {
+        if(this._isRunning) return false;
+
         this.games = games;
 
         this.steamUser.logOn({
@@ -102,15 +104,21 @@ export default class SteamClient {
             password: password,
             twoFactorCode: otp
         });
+
+        return true;
     }
 
-    public stop() {
+    public stop(): boolean {
+        if(!this._isRunning) return false;
+
         this.steamUser.logOff();
         this.steamUser.once('disconnected', () => {
             log("Bot stopped successfully.");
             this.startTime = 0;
         });
         this._isRunning = false;
+
+        return true;
     }
 
     public getInfo(): SteamClientInfo {
