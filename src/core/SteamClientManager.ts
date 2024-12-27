@@ -12,8 +12,12 @@ export default class SteamClientManager {
         return Object.values(this.steamClients).map(client => client.getInfo());
     }
 
-    public createClient(clientName: string): void {
+    public createClient(clientName: string): boolean {
+        if (this.steamClients[clientName]){
+            return false;
+        }
         this.steamClients[clientName] = new SteamClient();
+        return true;
     }
 
     public destroyClient(clientName: string): void {

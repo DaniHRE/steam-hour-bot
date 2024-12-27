@@ -75,7 +75,11 @@ app.post('/client', (req: Request, res: Response) => {
         return res.status(400).json({ error: "Missing clientName." });
     }
 
-    steamClientManager.createClient(clientName);
+    const isCreated = steamClientManager.createClient(clientName);
+
+    if(!isCreated){
+        return res.status(400).json({ error: "Client already exists." });
+    }
 
     res.json({ message: "Client created successfully." });
 });
