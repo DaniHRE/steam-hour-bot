@@ -1,6 +1,8 @@
 import SteamUser from "steam-user";
 import { log } from "../utils";
 import { getScriptUptime, getTimeInGMT3, shuffleArray } from "../utils";
+import { SteamClientInfo } from "../models/SteamClientInfo";
+import { EPersonaState } from "../models/EPersonaState";
 
 export default class SteamClient {
     private steamUser: SteamUser;
@@ -109,6 +111,26 @@ export default class SteamClient {
             this.startTime = 0;
         });
         this._isRunning = false;
+    }
+
+    public async getInfo(): Promise<SteamClientInfo> {
+        if (!this._isRunning) {
+            return {
+                name: '',
+                games: {},
+                status: '',
+                startTime: 0
+            }
+        }
+        
+        const steamPerson = (await this.steamUser.getPersonas([this.steamUser.steamID!])).personas[this.steamUser.steamID!.toString()];
+
+        return {
+            name: this.steamUser.accountInfo!.name,
+            games: this.games,
+            status: EPersonaState[steamPerson.persona_state as keyof EPersonaState].toString(),
+            startTime: this.startTime
+        };
     }
 
     public isRunning(): boolean {
