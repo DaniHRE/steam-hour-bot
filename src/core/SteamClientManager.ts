@@ -8,8 +8,8 @@ export default class SteamClientManager {
 
     }
 
-    public async getAllClients(): Promise<Array<SteamClientInfo>> { 
-        return await Promise.all(Object.values(this.steamClients).map(async client =>  await client.getInfo()));
+    public getAllClients(): Array<SteamClientInfo> { 
+        return Object.values(this.steamClients).map(client => client.getInfo());
     }
 
     public createClient(clientName: string): void {

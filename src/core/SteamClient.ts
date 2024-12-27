@@ -14,10 +14,13 @@ export default class SteamClient {
         this.steamUser = new SteamUser();
 
         this.steamUser.on('loggedOn', () => {
-            log("Initializing Steam Client..");
+            log("Initializing Steam Client...");
             this.steamUser.setPersona(SteamUser.EPersonaState.Online);
             const shuffledGames = shuffleArray(Object.keys(this.games).map(key => Number(key)));
             this.steamUser.gamesPlayed(shuffledGames);
+            log("Steam Client initialized successfully");
+            this.startTime = Date.now();
+            this._isRunning = true;
         });
 
         // @ts-ignore due to wrong typing in library
@@ -99,9 +102,6 @@ export default class SteamClient {
             password: password,
             twoFactorCode: otp
         });
-
-        this.startTime = Date.now();
-        this._isRunning = true;
     }
 
     public stop() {
@@ -113,7 +113,7 @@ export default class SteamClient {
         this._isRunning = false;
     }
 
-    public async getInfo(): Promise<SteamClientInfo> {
+    public getInfo(): SteamClientInfo {
         if (!this._isRunning) {
             return {
                 name: '',
@@ -123,7 +123,16 @@ export default class SteamClient {
             }
         }
         
-        const steamPerson = (await this.steamUser.getPersonas([this.steamUser.steamID!])).personas[this.steamUser.steamID!.toString()];
+        const steamPerson = this.steamUser.users[this.steamUser.steamID!.toString()];
+
+        if (!steamPerson) {
+            return {
+                name: this.steamUser.accountInfo!.name,
+                games: this.games,
+                status: EPersonaState["0"],
+                startTime: this.startTime
+            }
+        }
 
         return {
             name: this.steamUser.accountInfo!.name,
