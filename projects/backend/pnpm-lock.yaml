@@ -6,9 +6,7 @@ settings:
 
 importers:
 
-  .: {}
-
-  projects/backend:
+  .:
     dependencies:
       axios:
         specifier: ^1.7.9
