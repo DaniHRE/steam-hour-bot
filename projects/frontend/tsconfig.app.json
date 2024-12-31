@@ -20,13 +20,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
-  },
-  "include": ["src"],
-  "baseUrl": "./src",
-  "paths": {
-    "@/*": [
-      "./src/*"
-    ]
+    "noUncheckedSideEffectImports": true,
+
+    /* Paths */
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
 }
