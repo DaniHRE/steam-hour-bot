@@ -57,10 +57,6 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ client }) => {
         return () => clearInterval(interval);
     }, [client.uptime]);
 
-    useEffect(() => {
-        console.log("TeSTE")
-    }, []);
-
     return (
         <Link className='w-full max-w-md flex' to={`/client/${client.id}/dashboard`}>
             <Card className="w-full max-w-md p-4 flex flex-col border shadow-lg">
