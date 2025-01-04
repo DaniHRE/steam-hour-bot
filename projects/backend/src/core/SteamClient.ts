@@ -58,7 +58,7 @@ export default class SteamClient {
                 this.steamUser.chatMessage(steamID, conversationReplies[foundKey]);
             } else {
                 // @ts-ignore due to wrong typing in library
-                this.steamUser.chatMessage(steamID, "Fala ai fdp");
+                return
             }
         });
 
