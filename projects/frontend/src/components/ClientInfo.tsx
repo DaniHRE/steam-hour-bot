@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardTitle, CardDescription } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
 
 interface ClientInfoProps {
     client: {
+        id: string;
         avatar: string;
         name: string;
         status: string;
@@ -55,38 +57,46 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ client }) => {
         return () => clearInterval(interval);
     }, [client.uptime]);
 
+    useEffect(() => {
+        console.log("TeSTE")
+    }, []);
+
     return (
-    <Card className="w-full max-w-md p-4 flex flex-col border shadow-lg">
-        <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
-                <img src={client.avatar} className="text-gray-500 text-sm rounded-sm shadow-lg"></img>
-            </div>
-            <div className="flex-1">
-                <CardTitle className={`text-lg line-clamp-1 `} title={client.name}>{client.name}</CardTitle>
-                <CardDescription className={getStatusColor(client.status.toLocaleLowerCase())}> {client.status}</CardDescription>
-            </div>
-            <div className="text-sm text-gray-500">
-                <span>{uptime}</span>
-            </div>
-        </div>
-        <p className="font-semibold mb-2 mt-4">Jogos Ativos:</p>
-        <div className="flex gap-1">
-            {client.games.slice(0, maxGamesToShow).map((game, index) => (
-                <img
-                    key={index}
-                    className="w-8 h-8 bg-gray-200 rounded-md shadow-lg flex items-center justify-center text-xs text-gray-600"
-                    src={game.logo}
-                    alt={game.name}
-                >
-                </img>
-            ))}
-            {additionalGamesCount > 0 && (
-                <div className="w-8 h-8 flex items-center justify-center text-lg font-bold text-white">
-                    +{additionalGamesCount}
+        <Link className='w-full max-w-md flex' to={`/client/${client.id}/dashboard`}>
+            <Card className="w-full max-w-md p-4 flex flex-col border shadow-lg">
+                <div className="flex items-start gap-4">
+                    <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
+                        <img src={client.avatar} className="text-gray-500 text-sm rounded-sm shadow-lg"></img>
+                    </div>
+                    <div className="flex-1">
+                        <CardTitle className={`text-lg line-clamp-1 `} title={client.name}>{client.name}</CardTitle>
+                        <CardDescription className={getStatusColor(client.status.toLocaleLowerCase())}> {client.status}</CardDescription>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                        <span>{uptime}</span>
+                    </div>
                 </div>
-            )}
-        </div>
-    </Card>
+                <p className="font-semibold mb-2 mt-4">Jogos Ativos:</p>
+                <div className="flex gap-1">
+                    {client.games.slice(0, maxGamesToShow).map((game, index) => (
+                        <img
+                            key={index}
+                            className="w-8 h-8 bg-gray-200 rounded-md shadow-lg flex items-center justify-center text-xs text-gray-600"
+                            src={game.logo}
+                            alt={game.name}
+                        >
+                        </img>
+                    ))}
+                    {additionalGamesCount > 0 && (
+                        <div className="w-8 h-8 flex items-center justify-center text-lg font-bold text-white">
+                            +{additionalGamesCount}
+                        </div>
+                    )}
+                </div>
+            </Card>
+        </Link>
+
+
     );
 };
 

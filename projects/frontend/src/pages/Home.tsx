@@ -4,6 +4,7 @@ import ClientInfo from '@/components/ClientInfo';
 
 const mockClients = [
     {
+        id: "30ad6173-3d96-4368-817d-d2783a69dc2b",
         avatar: 'https://avatars.githubusercontent.com/u/67109815?v=4',
         name: 'Corno master',
         status: 'Online',
@@ -24,6 +25,7 @@ const mockClients = [
         ]
     },
     {
+        id: "066dc7f4-71cd-4a8e-9e58-3f5ee20c04ca",
         avatar: 'https://avatars.fastly.steamstatic.com/9880809d8aa0329e989057312a673468a2e56488_full.jpg',
         name: 'Arroz com feijão é muito bom mesmo',
         status: 'Offline',
@@ -44,6 +46,7 @@ const mockClients = [
         ]
     },
     {
+        id: "066dc7f4-71cd-4a8e-9e58-3f5ee20c04ca",
         avatar: "https://avatars.cloudflare.steamstatic.com/9978d0fc182121ad37da16262eb3b304ed81540b_full.jpg",
         name: 'Arroz com feijão é muito bom mesmo',
         status: 'Offline',
@@ -64,6 +67,7 @@ const mockClients = [
         ]
     },
     {
+        id: "066dc7f4-71cd-4a8e-9e58-3f5ee20c04ca",
         avatar: 'https://avatars.fastly.steamstatic.com/9880809d8aa0329e989057312a673468a2e56488_full.jpg',
         name: '| D I N O |',
         status: 'Online',
@@ -160,6 +164,7 @@ const mockClients = [
         ]
     },
     {
+        id: "066dc7f4-71cd-4a8e-9e58-3f5ee20c04ca",
         avatar: 'https://avatars.fastly.steamstatic.com/9880809d8aa0329e989057312a673468a2e56488_full.jpg',
         name: 'Arroz com feijão é muito bom mesmo',
         status: 'Offline',
@@ -180,6 +185,7 @@ const mockClients = [
         ]
     },
     {
+        id: "066dc7f4-71cd-4a8e-9e58-3f5ee20c04ca",
         avatar: 'https://avatars.fastly.steamstatic.com/9880809d8aa0329e989057312a673468a2e56488_full.jpg',
         name: 'Arroz com feijão é muito bom mesmo',
         status: 'Offline',
@@ -200,7 +206,6 @@ const mockClients = [
         ]
     }
 ]
-
 
 export const Home = () => {
     return (
