@@ -4,6 +4,7 @@ import { getScriptUptime, getTimeInGMT3, shuffleArray } from "../utils";
 import { SteamClientInfo } from "../models/SteamClientInfo";
 import { EPersonaState } from "../models/EPersonaState";
 import defaultReplies from "../config/defaultReplies.json";
+import { UUID } from "crypto";
 
 export default class SteamClient {
     private steamUser: SteamUser;
@@ -11,7 +12,7 @@ export default class SteamClient {
     private _isRunning: boolean = false;
     private games: { [key: number]: string } = {};
 
-    constructor() {
+    constructor(private id: UUID) {
         this.steamUser = new SteamUser();
 
         this.steamUser.on('loggedOn', () => {
@@ -108,6 +109,7 @@ export default class SteamClient {
     public getInfo(): SteamClientInfo {
         if (!this._isRunning) {
             return {
+                id: this.id,
                 name: '',
                 games: {},
                 status: '',
@@ -119,6 +121,7 @@ export default class SteamClient {
 
         if (!steamPerson) {
             return {
+                id: this.id,
                 name: this.steamUser.accountInfo!.name,
                 games: this.games,
                 status: EPersonaState["0"],
@@ -127,6 +130,7 @@ export default class SteamClient {
         }
 
         return {
+            id: this.id,
             name: this.steamUser.accountInfo!.name,
             games: this.games,
             status: EPersonaState[steamPerson.persona_state as keyof EPersonaState].toString(),

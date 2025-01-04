@@ -3,22 +3,28 @@ import { log } from './utils';
 import { fetchGameNames } from './services';
 import SteamClientManager from './core/SteamClientManager';
 
+const cors = require('cors');
+
 // Create an Express app
 const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
+app.use(cors({
+    origin: `http://localhost:5173`
+}));
+
 const steamClientManager = new SteamClientManager();
 
 // Endpoint to start the bot
 app.post('/start-bot', async (req: Request, res: Response) => {
-    const { clientName, username, password, otp, gamesId } = req.body;
+    const { clientId, username, password, otp, gamesId } = req.body;
 
-    if (!username || !password || !otp || !gamesId) {
-        return res.status(400).json({ error: "Missing clientName, username, password, OTP, or Games ID." });
+    if (!clientId || !username || !password || !otp || !gamesId) {
+        return res.status(400).json({ error: "Missing clientId, username, password, OTP, or Games ID." });
     }
 
-    const steamClient = await steamClientManager.getClient(clientName);
+    const steamClient = await steamClientManager.getClient(clientId);
 
     if (!steamClient) {
         return res.status(400).json({ error: "Client don't exist" });
@@ -43,13 +49,13 @@ app.post('/start-bot', async (req: Request, res: Response) => {
 
 // Stop only the client name bot session
 app.post('/stop-bot', (req: Request, res: Response) => {
-    const { clientName } = req.body;
+    const { clientId } = req.body;
 
-    if (!clientName) {
-        return res.status(400).json({ error: "Missing clientName" });
+    if (!clientId) {
+        return res.status(400).json({ error: "Missing clientId" });
     }
 
-    const steamClient = steamClientManager.getClient(clientName);
+    const steamClient = steamClientManager.getClient(clientId);
 
     if (!steamClient) {
         return res.status(400).json({ error: "Client don't exist" });
@@ -69,37 +75,43 @@ app.get('/clients', async (req: Request, res: Response) => {
     res.json(await steamClientManager.getAllClients());
 });
 
+// Get a single client session
+app.get('/client/:id', async (req: Request, res: Response) => {
+    const {id} = req.params;
+
+    if(!id){
+        return res.status(400).json({ error: "Missing clientId." });
+    }
+
+    const client = steamClientManager.getClient(id)?.getInfo();
+
+    if (!client) {
+        return res.status(404).json({ error: "Client don't exist" });
+    }
+
+    res.json(client);
+})
+
 app.post('/client', (req: Request, res: Response) => {
-    const { clientName } = req.body;
-
-    if (!clientName) {
-        return res.status(400).json({ error: "Missing clientName." });
-    }
-
-    const isCreated = steamClientManager.createClient(clientName);
-
-    if(!isCreated){
-        return res.status(400).json({ error: "Client already exists." });
-    }
-
-    res.json({ message: "Client created successfully." });
+    const clientId = steamClientManager.createClient();
+    res.json({ message: "Client Created Sucessfully", clientId: clientId});
 });
 
 // Get a single client session
 app.delete('/client', (req: Request, res: Response) => {
-    const {clientName} = req.body;
+    const {clientId} = req.body;
 
-    if(!clientName){
-        return res.status(400).json({ error: "Missing clientName." });
+    if(!clientId){
+        return res.status(400).json({ error: "Missing clientId." });
     }
 
-    const steamClient = steamClientManager.getClient(clientName);
+    const steamClient = steamClientManager.getClient(clientId);
 
     if (!steamClient) {
         return res.status(400).json({ error: "Client don't exist" });
     }
 
-    steamClientManager.destroyClient(clientName);
+    steamClientManager.destroyClient(clientId);
 
     return res.status(200).json({message: "Client deleted successfully."})
 });

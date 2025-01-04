@@ -1,3 +1,4 @@
+import { randomUUID, UUID } from "crypto";
 import { SteamClientInfo } from "../models/SteamClientInfo";
 import SteamClient from "./SteamClient";
 
@@ -12,25 +13,23 @@ export default class SteamClientManager {
         return Object.values(this.steamClients).map(client => client.getInfo());
     }
 
-    public createClient(clientName: string): boolean {
-        if (this.steamClients[clientName]){
-            return false;
-        }
-        this.steamClients[clientName] = new SteamClient();
-        return true;
+    public createClient(): string {
+        const clientId = randomUUID();
+        this.steamClients[clientId] = new SteamClient(clientId);
+        return clientId;
     }
 
-    public destroyClient(clientName: string): void {
-        const client = this.steamClients[clientName];
+    public destroyClient(clientId: UUID): void {
+        const client = this.steamClients[clientId];
 
         if (client.isRunning()) {
             client.stop();
         }
 
-        delete this.steamClients[clientName];
+        delete this.steamClients[clientId];
     }
 
-    public getClient(clientName: string): SteamClient | null {
-        return this.steamClients[clientName] || null;
+    public getClient(clientId: string): SteamClient | null {
+        return this.steamClients[clientId] || null;
     }
 }
