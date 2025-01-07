@@ -70,6 +70,9 @@ export default class SteamClient {
                 case SteamUser.EResult.AlreadyLoggedInElsewhere:
                     log("Login Failed: Already logged in elsewhere.");
                     break;
+                case SteamUser.EResult.LoggedInElsewhere:
+                    log("Login Failed: Logged in elsewhere.");
+                    break;
                 case SteamUser.EResult.AccountLogonDenied:
                     log("Login Failed: Steam Guard required.");
                     break;
@@ -80,7 +83,7 @@ export default class SteamClient {
     }
 
     public start(username: string, password: string, otp: string, games: { [key: number]: string } = { 730: "Counter Striker 2" }): boolean {
-        if(this._isRunning) return false;
+        if (this._isRunning) return false;
 
         this.games = games;
 
@@ -94,7 +97,7 @@ export default class SteamClient {
     }
 
     public stop(): boolean {
-        if(!this._isRunning) return false;
+        if (!this._isRunning) return false;
 
         this.steamUser.logOff();
         this.steamUser.once('disconnected', () => {
@@ -107,7 +110,7 @@ export default class SteamClient {
     }
 
     public getInfo(): SteamClientInfo {
-        if (!this._isRunning) {
+        if (!this._isRunning || !this.steamUser.steamID) {
             return {
                 id: this.id,
                 name: '',
@@ -116,7 +119,7 @@ export default class SteamClient {
                 startTime: 0
             }
         }
-        
+
         const steamPerson = this.steamUser.users[this.steamUser.steamID!.toString()];
 
         if (!steamPerson) {
