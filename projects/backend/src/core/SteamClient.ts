@@ -113,6 +113,7 @@ export default class SteamClient {
         if (!this._isRunning || !this.steamUser.steamID) {
             return {
                 id: this.id,
+                steamID: '',
                 name: '',
                 games: {},
                 status: '',
@@ -125,6 +126,7 @@ export default class SteamClient {
         if (!steamPerson) {
             return {
                 id: this.id,
+                steamID: this.steamUser.steamID!.toString(),
                 name: this.steamUser.accountInfo!.name,
                 games: this.games,
                 status: EPersonaState["0"],
@@ -134,6 +136,7 @@ export default class SteamClient {
 
         return {
             id: this.id,
+            steamID: this.steamUser.steamID!.toString(),
             name: this.steamUser.accountInfo!.name,
             games: this.games,
             status: EPersonaState[steamPerson.persona_state as keyof EPersonaState].toString(),
