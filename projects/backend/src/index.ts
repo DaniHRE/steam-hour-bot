@@ -83,7 +83,7 @@ app.get('/client/:id', async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Missing clientId." });
     }
 
-    const client = steamClientManager.getClient(id)?.getInfo();
+    const client = await steamClientManager.getClient(id)?.getInfo();
 
     if (!client) {
         return res.status(404).json({ error: "Client don't exist" });

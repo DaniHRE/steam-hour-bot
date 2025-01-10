@@ -1,7 +1,7 @@
 import SteamUser from "steam-user";
 import { log } from "../utils";
 import { getScriptUptime, getTimeInGMT3, shuffleArray } from "../utils";
-import { SteamClientInfo } from "../models/SteamClientInfo";
+import { SteamClientInfo, SteamOwnedGames } from "../models/SteamClientInfo";
 import { EPersonaState } from "../models/EPersonaState";
 import defaultReplies from "../config/defaultReplies.json";
 import { UUID } from "crypto";
@@ -13,7 +13,9 @@ export default class SteamClient {
     private games: { [key: number]: string } = {};
 
     constructor(private id: UUID) {
-        this.steamUser = new SteamUser();
+        this.steamUser = new SteamUser({
+            enablePicsCache: true
+        });
 
         this.steamUser.on('loggedOn', () => {
             log("Initializing Steam Client...");
@@ -109,36 +111,74 @@ export default class SteamClient {
         return true;
     }
 
-    public getInfo(): SteamClientInfo {
+    public async getInfo(): Promise<SteamClientInfo> {
         if (!this._isRunning || !this.steamUser.steamID) {
             return {
-                id: this.id,
-                steamID: '',
-                name: '',
-                games: {},
+                clientId: this.id,
+                steamUser: {
+                    id: '',
+                    name: '',
+                    ownedGames: [],
+                    totalPlaytime: 0
+                },
+                activeGames: {},
                 status: '',
                 startTime: 0
             }
         }
 
         const steamPerson = this.steamUser.users[this.steamUser.steamID!.toString()];
+        // Wrapping and converting types due library doesn't have a proper typing
+        const ownedGames = await this.steamUser.getUserOwnedApps(this.steamUser.steamID!.toString()) as unknown as {apps: SteamOwnedGames[]};
 
-        if (!steamPerson) {
+        if (!steamPerson || ownedGames.apps.length === 0) {
             return {
-                id: this.id,
-                steamID: this.steamUser.steamID!.toString(),
-                name: this.steamUser.accountInfo!.name,
-                games: this.games,
+                clientId: this.id,
+                steamUser: {
+                    id:  this.steamUser.steamID!.toString(),
+                    name: this.steamUser.accountInfo?.name!,
+                    ownedGames: ownedGames.apps.map(game => ({
+                        appid: game.appid,
+                        name: game.name,
+                        playtime_2weeks: game.playtime_2weeks || 0,
+                        playtime_forever: game.playtime_forever,
+                        img_icon_url: game.img_icon_url,
+                        img_logo_url: game.img_logo_url,
+                        has_community_visible_stats: game.has_community_visible_stats,
+                        playtime_windows_forever: game.playtime_windows_forever,
+                        playtime_mac_forever: game.playtime_mac_forever,
+                        playtime_linux_forever: game.playtime_linux_forever,
+                        rtime_last_played: game.rtime_last_played
+                    })),
+                    totalPlaytime: ownedGames.apps.reduce((acc, game) => acc + game.playtime_forever, 0)
+                },
+                activeGames: this.games,
                 status: EPersonaState["0"],
                 startTime: this.startTime
             }
         }
 
         return {
-            id: this.id,
-            steamID: this.steamUser.steamID!.toString(),
-            name: this.steamUser.accountInfo!.name,
-            games: this.games,
+            clientId: this.id,
+            steamUser: {
+                id:  this.steamUser.steamID!.toString(),
+                name: this.steamUser.accountInfo?.name!,
+                ownedGames: ownedGames.apps.map(game => ({
+                    appid: game.appid,
+                    name: game.name,
+                    playtime_2weeks: game.playtime_2weeks || 0,
+                    playtime_forever: game.playtime_forever,
+                    img_icon_url: game.img_icon_url,
+                    img_logo_url: game.img_logo_url,
+                    has_community_visible_stats: game.has_community_visible_stats,
+                    playtime_windows_forever: game.playtime_windows_forever,
+                    playtime_mac_forever: game.playtime_mac_forever,
+                    playtime_linux_forever: game.playtime_linux_forever,
+                    rtime_last_played: game.rtime_last_played
+                })),
+                totalPlaytime: ownedGames.apps.reduce((acc, game) => acc + game.playtime_forever, 0)
+            },
+            activeGames: this.games,
             status: EPersonaState[steamPerson.persona_state as keyof EPersonaState].toString(),
             startTime: this.startTime
         };
