@@ -5,23 +5,39 @@ import { SteamClientInfo, SteamOwnedGames } from "../models/SteamClientInfo";
 import { EPersonaState } from "../models/EPersonaState";
 import defaultReplies from "../config/defaultReplies.json";
 import { UUID } from "crypto";
+import { getSteamAchievements } from "../services/SteamAchievementService";
 
 export default class SteamClient {
     private steamUser: SteamUser;
     private startTime: number = 0;
     private _isRunning: boolean = false;
     private games: { [key: number]: string } = {};
+    private achievements: { [key: number]: any[] } = {};
 
     constructor(private id: UUID) {
         this.steamUser = new SteamUser({
             enablePicsCache: true
         });
 
-        this.steamUser.on('loggedOn', () => {
+        this.steamUser.on('loggedOn', async () => {
             log("Initializing Steam Client...");
             this.steamUser.setPersona(SteamUser.EPersonaState.Online);
             const shuffledGames = shuffleArray(Object.keys(this.games).map(key => Number(key)));
             this.steamUser.gamesPlayed(shuffledGames);
+
+            const steamID = this.steamUser.steamID!.toString();
+            const achievementPromises = Object.keys(this.games).map(async (gameId) => {
+                try {
+                    const achievements = await getSteamAchievements(steamID, Number(gameId));
+                    this.achievements[Number(gameId)] = achievements;
+                } catch (error) {
+                    console.error(`Error fetching achievements for game ${gameId}:`, error);
+                    this.achievements[Number(gameId)] = [];
+                }
+            });
+
+            await Promise.all(achievementPromises);
+
             log("Steam Client initialized successfully");
             this.startTime = Date.now();
             this._isRunning = true;
@@ -129,13 +145,13 @@ export default class SteamClient {
 
         const steamPerson = this.steamUser.users[this.steamUser.steamID!.toString()];
         // Wrapping and converting types due library doesn't have a proper typing
-        const ownedGames = await this.steamUser.getUserOwnedApps(this.steamUser.steamID!.toString()) as unknown as {apps: SteamOwnedGames[]};
+        const ownedGames = await this.steamUser.getUserOwnedApps(this.steamUser.steamID!.toString()) as unknown as { apps: SteamOwnedGames[] };
 
         if (!steamPerson || ownedGames.apps.length === 0) {
             return {
                 clientId: this.id,
                 steamUser: {
-                    id:  this.steamUser.steamID!.toString(),
+                    id: this.steamUser.steamID!.toString(),
                     name: this.steamUser.accountInfo?.name!,
                     ownedGames: ownedGames.apps.map(game => ({
                         appid: game.appid,
@@ -148,7 +164,8 @@ export default class SteamClient {
                         playtime_windows_forever: game.playtime_windows_forever,
                         playtime_mac_forever: game.playtime_mac_forever,
                         playtime_linux_forever: game.playtime_linux_forever,
-                        rtime_last_played: game.rtime_last_played
+                        rtime_last_played: game.rtime_last_played,
+                        achievements: game.achievements
                     })),
                     totalPlaytime: ownedGames.apps.reduce((acc, game) => acc + game.playtime_forever, 0)
                 },
@@ -161,7 +178,7 @@ export default class SteamClient {
         return {
             clientId: this.id,
             steamUser: {
-                id:  this.steamUser.steamID!.toString(),
+                id: this.steamUser.steamID!.toString(),
                 name: this.steamUser.accountInfo?.name!,
                 ownedGames: ownedGames.apps.map(game => ({
                     appid: game.appid,
@@ -174,14 +191,15 @@ export default class SteamClient {
                     playtime_windows_forever: game.playtime_windows_forever,
                     playtime_mac_forever: game.playtime_mac_forever,
                     playtime_linux_forever: game.playtime_linux_forever,
-                    rtime_last_played: game.rtime_last_played
+                    rtime_last_played: game.rtime_last_played,
+                    achievements: this.achievements[game.appid] || []
                 })),
                 totalPlaytime: ownedGames.apps.reduce((acc, game) => acc + game.playtime_forever, 0)
             },
             activeGames: this.games,
             status: EPersonaState[steamPerson.persona_state as keyof EPersonaState].toString(),
             startTime: this.startTime
-        };
+        }
     }
 
     public isRunning(): boolean {

@@ -1,4 +1,5 @@
 import axios from "axios";
+
 import { log } from "../utils";
 
 // Function to fetch game names from Steam Store
@@ -12,11 +13,11 @@ export const fetchGameNames = async (gameIds: number[]): Promise<{ [key: number]
             const response = await axios.get(url);
 
             if (response.status === 200) {
-                // Acessa a propriedade dinamicamente usando o gameId
+                // Access the property dynamically using the gameId
                 const gameData = response.data[gameId]?.data;
                 if (gameData) {
                     log(`Loaded game data for ${gameData.name}`);
-                    gameNames[gameId] = gameData.name; // Assume que 'name' é o nome do jogo
+                    gameNames[gameId] = gameData.name; // Assume that 'name' is the name of the game
                 } else {
                     gameNames[gameId] = `Unknown Game (ID: ${gameId})`;
                 }

@@ -1,6 +1,14 @@
 import { UUID } from "crypto";
 import { Games } from "./Game";
 
+export type SteamGameAchievement = {
+  title: string;
+  description: string;
+  unlocked: boolean;
+  unlockTime?: string;
+  image: string;
+}
+
 export type SteamOwnedGames = {
   appid: number;
   name: string;
@@ -13,6 +21,7 @@ export type SteamOwnedGames = {
   playtime_mac_forever: number;
   playtime_linux_forever: number;
   rtime_last_played: number;
+  achievements: SteamGameAchievement[];
 }
 
 export type SteamClientInfo = {
