@@ -19,30 +19,6 @@ export default class SteamClient {
             enablePicsCache: true
         });
 
-        this.steamUser.on('loggedOn', async () => {
-            log("Initializing Steam Client...");
-            this.steamUser.setPersona(SteamUser.EPersonaState.Online);
-            const shuffledGames = shuffleArray(Object.keys(this.games).map(key => Number(key)));
-            this.steamUser.gamesPlayed(shuffledGames);
-
-            const steamID = this.steamUser.steamID!.toString();
-            const achievementPromises = Object.keys(this.games).map(async (gameId) => {
-                try {
-                    const achievements = await getSteamAchievements(steamID, Number(gameId));
-                    this.achievements[Number(gameId)] = achievements;
-                } catch (error) {
-                    console.error(`Error fetching achievements for game ${gameId}:`, error);
-                    this.achievements[Number(gameId)] = [];
-                }
-            });
-
-            await Promise.all(achievementPromises);
-
-            log("Steam Client initialized successfully");
-            this.startTime = Date.now();
-            this._isRunning = true;
-        });
-
         // @ts-ignore due to wrong typing in library
         this.steamUser.on('friendMessage', (steamID, message) => {
             const conversationReplies: { [key: string]: string } = defaultReplies;
@@ -79,39 +55,117 @@ export default class SteamClient {
                 return
             }
         });
-
-        this.steamUser.on('error', (err: any) => {
-            switch (err.eresult) {
-                case SteamUser.EResult.InvalidPassword:
-                    log("Login Failed: Invalid Password.");
-                    break;
-                case SteamUser.EResult.AlreadyLoggedInElsewhere:
-                    log("Login Failed: Already logged in elsewhere.");
-                    break;
-                case SteamUser.EResult.LoggedInElsewhere:
-                    log("Login Failed: Logged in elsewhere.");
-                    break;
-                case SteamUser.EResult.AccountLogonDenied:
-                    log("Login Failed: Steam Guard required.");
-                    break;
-                default:
-                    log(`Login Failed: ${err.message}`);
-            }
-        });
     }
 
-    public start(username: string, password: string, otp: string, games: { [key: number]: string } = { 730: "Counter Striker 2" }): boolean {
-        if (this._isRunning) return false;
+    public async start(username: string, password: string, otp: string, games: { [key: number]: string } = { 730: "Counter Striker 2" }): Promise<{ success: boolean; error?: string }> {
+        if (this._isRunning) {
+            return { success: false, error: "Bot is already running." };
+        }
 
         this.games = games;
 
-        this.steamUser.logOn({
-            accountName: username,
-            password: password,
-            twoFactorCode: otp
-        });
+        // Create a promise to handle the login process
+        return new Promise((resolve) => {
+            // Set up temporary event listeners for this login attempt
+            const onLoggedOn = async () => {
+                try {
+                    // Get user's owned games to validate
+                    const ownedGames = await this.steamUser.getUserOwnedApps(this.steamUser.steamID!.toString()) as unknown as { apps: SteamOwnedGames[] };
+                    
+                    // Check if user owns all the games they want to farm
+                    const gameIds = Object.keys(games).map(id => parseInt(id));
+                    const ownedGameIds = ownedGames.apps.map(game => game.appid);
+                    
+                    const unownedGames = gameIds.filter(gameId => !ownedGameIds.includes(gameId));
+                    
+                    if (unownedGames.length > 0) {
+                        // User doesn't own some games, stop the client
+                        this.steamUser.logOff();
+                        this._isRunning = false;
+                        
+                        const unownedGameNames = unownedGames.map(id => games[id] || `Game ${id}`).join(', ');
+                        resolve({ 
+                            success: false, 
+                            error: `You don't own the following games: ${unownedGameNames}. You can only farm hours for games you own.`
+                        });
+                        return;
+                    }
 
-        return true;
+                    // User owns all games, proceed with initialization
+                    log("Initializing Steam Client...");
+                    this.steamUser.setPersona(SteamUser.EPersonaState.Online);
+                    const shuffledGames = shuffleArray(Object.keys(this.games).map(key => Number(key)));
+                    this.steamUser.gamesPlayed(shuffledGames);
+
+                    const steamID = this.steamUser.steamID!.toString();
+                    const achievementPromises = Object.keys(this.games).map(async (gameId) => {
+                        try {
+                            const achievements = await getSteamAchievements(steamID, Number(gameId));
+                            this.achievements[Number(gameId)] = achievements;
+                        } catch (error) {
+                            console.error(`Error fetching achievements for game ${gameId}:`, error);
+                            this.achievements[Number(gameId)] = [];
+                        }
+                    });
+
+                    await Promise.all(achievementPromises);
+
+                    log("Steam Client initialized successfully");
+                    this.startTime = Date.now();
+                    this._isRunning = true;
+                    
+                    resolve({ success: true });
+                } catch (error) {
+                    this.steamUser.logOff();
+                    this._isRunning = false;
+                    resolve({ 
+                        success: false, 
+                        error: `Failed to validate games: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    });
+                }
+                
+                // Clean up event listeners
+                this.steamUser.removeListener('loggedOn', onLoggedOn);
+                this.steamUser.removeListener('error', onError);
+            };
+
+            const onError = (err: any) => {
+                let errorMessage = "Login failed";
+                switch (err.eresult) {
+                    case SteamUser.EResult.InvalidPassword:
+                        errorMessage = "Invalid password";
+                        break;
+                    case SteamUser.EResult.AlreadyLoggedInElsewhere:
+                        errorMessage = "Already logged in elsewhere";
+                        break;
+                    case SteamUser.EResult.LoggedInElsewhere:
+                        errorMessage = "Logged in elsewhere";
+                        break;
+                    case SteamUser.EResult.AccountLogonDenied:
+                        errorMessage = "Steam Guard required or invalid";
+                        break;
+                    default:
+                        errorMessage = err.message || "Unknown login error";
+                }
+                
+                resolve({ success: false, error: errorMessage });
+                
+                // Clean up event listeners
+                this.steamUser.removeListener('loggedOn', onLoggedOn);
+                this.steamUser.removeListener('error', onError);
+            };
+
+            // Set up event listeners
+            this.steamUser.once('loggedOn', onLoggedOn);
+            this.steamUser.once('error', onError);
+
+            // Attempt login
+            this.steamUser.logOn({
+                accountName: username,
+                password: password,
+                twoFactorCode: otp
+            });
+        });
     }
 
     public stop(): boolean {

@@ -30,20 +30,25 @@ app.post('/start-bot', async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Client don't exist" });
     }
 
-    if (gamesId.length <= 30) {
-        log(`Initializing ${gamesId.length} games...`);
-    } else {
-        log(`Exceeded the limit of 30 games (${gamesId.length} provided). Logging off...`);
+    if (gamesId.length > 30) {
+        return res.status(400).json({ error: `Exceeded the limit of 30 games (${gamesId.length} provided). Maximum is 30.` });
     }
 
-    const games = await fetchGameNames(gamesId);
-    const isStarted = steamClient.start(username, password, otp, games)
+    log(`Attempting to start bot with ${gamesId.length} games...`);
 
-    if(!isStarted){
-        return res.status(400).json({ error: "Bot is already running." });
+    try {
+        const games = await fetchGameNames(gamesId);
+        const result = await steamClient.start(username, password, otp, games);
+
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        res.status(200).json({ message: "Bot started successfully." });
+    } catch (error) {
+        log(`Error starting bot: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        res.status(500).json({ error: "Internal server error while starting bot." });
     }
-
-    res.status(200).send({ message: "Bot started successfully." });
 });
 
 
