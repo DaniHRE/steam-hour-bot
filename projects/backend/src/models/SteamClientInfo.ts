@@ -29,6 +29,7 @@ export type SteamClientInfo = {
   steamUser: {
     id: string;
     name: string;
+    avatar: string;
     ownedGames: SteamOwnedGames[];
     totalPlaytime: number;
   }

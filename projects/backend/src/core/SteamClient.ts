@@ -134,6 +134,7 @@ export default class SteamClient {
                 steamUser: {
                     id: '',
                     name: '',
+                    avatar: '',
                     ownedGames: [],
                     totalPlaytime: 0
                 },
@@ -148,11 +149,15 @@ export default class SteamClient {
         const ownedGames = await this.steamUser.getUserOwnedApps(this.steamUser.steamID!.toString()) as unknown as { apps: SteamOwnedGames[] };
 
         if (!steamPerson || ownedGames.apps.length === 0) {
+            const defaultAvatar = 'https://avatars.fastly.steamstatic.com/default_full.jpg';
+            const userAvatar = steamPerson?.avatar_url_full || defaultAvatar;
+            
             return {
                 clientId: this.id,
                 steamUser: {
                     id: this.steamUser.steamID!.toString(),
                     name: this.steamUser.accountInfo?.name!,
+                    avatar: userAvatar,
                     ownedGames: ownedGames.apps.map(game => ({
                         appid: game.appid,
                         name: game.name,
@@ -175,11 +180,15 @@ export default class SteamClient {
             }
         }
 
+        const defaultAvatar = 'https://avatars.fastly.steamstatic.com/default_full.jpg';
+        const userAvatar = steamPerson?.avatar_url_full || defaultAvatar;
+
         return {
             clientId: this.id,
             steamUser: {
                 id: this.steamUser.steamID!.toString(),
                 name: this.steamUser.accountInfo?.name!,
+                avatar: userAvatar,
                 ownedGames: ownedGames.apps.map(game => ({
                     appid: game.appid,
                     name: game.name,
