@@ -10,36 +10,27 @@ import { steamGameService } from '@/services/steamGame';
 
 // Helper function to convert SteamClientInfo to ClientInfo format
 const convertToClientInfo = (steamClient: SteamClientInfo): ClientInfoType => {
-  // Function to get game icon URL using only the app ID
   const getGameIconUrl = (appId: string): string => {
-    // Try to find the game in owned games first to get the specific icon
     const ownedGame = steamClient.steamUser?.ownedGames?.find(game => game.appid.toString() === appId);
-    
     if (ownedGame?.img_icon_url) {
-      // If we have the specific icon URL, use it
       return ownedGame.img_icon_url;
     }
-    
-    // Fallback: use Steam's header image which always exists
     return steamGameService.getGameIconUrl(appId);
   };
 
-  // Get game icons from active games
-  const games = Object.entries(steamClient.activeGames || {}).map(([appId, gameName]) => {
-    const iconUrl = getGameIconUrl(appId);
-    
-    return {
-      logo: iconUrl,
-      name: gameName,
-    };
-  });
+  const games = Object.entries(steamClient.activeGames || {}).map(([appId, gameName]) => ({
+    logo: getGameIconUrl(appId),
+    name: gameName,
+  }));
+
+  const hasSteamUser = !!steamClient.steamUser?.id;
 
   return {
     id: steamClient.clientId,
     avatar: steamClient.steamUser?.avatar || 'https://avatars.fastly.steamstatic.com/default_full.jpg',
-    name: steamClient.steamUser?.name || `Client ${steamClient.clientId.slice(0, 8)}`,
-    status: steamClient.status,
-    uptime: steamClient.startTime,
+    name: hasSteamUser ? (steamClient.steamUser?.name || `Client ${steamClient.clientId.slice(0, 8)}`) : `Client ${steamClient.clientId.slice(0, 8)}`,
+    status: steamClient.status || (hasSteamUser ? 'online' : 'offline'),
+    uptime: hasSteamUser ? steamClient.startTime : 0,
     games,
   };
 };

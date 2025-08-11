@@ -1,5 +1,3 @@
-import { UUID } from "crypto";
-
 export type Game = {
     id: string;
     name: string;
@@ -34,7 +32,7 @@ export type SteamOwnedGames = {
 }
 
 export type SteamClientInfo = {
-  clientId: UUID;
+  clientId: string; // changed from UUID to string
   steamUser: {
     id: string;
     name: string;
