@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardTitle, CardDescription } from '@/components/ui/card';
-import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Settings, LayoutDashboard } from 'lucide-react';
+import Link from 'next/link';
 
 interface ClientInfoProps {
-    client: {
-        id: string;
-        avatar: string;
+    id: string;
+    avatar: string;
+    name: string;
+    status: string;
+    uptime: number;
+    games: {
+        logo: string;
         name: string;
-        status: string;
-        uptime: number;
-        games: {
-            logo: string;
-            name: string;
-        }[];
-    };
+    }[];
+    onManageBot?: () => void;
+    onDelete?: () => void;
 };
 
 const formatUptime = (uptime: number) => {
@@ -44,44 +46,65 @@ const getStatusColor = (status: string) => {
     }
 };
 
-const ClientInfo: React.FC<ClientInfoProps> = ({ client }) => {
+const ClientInfo: React.FC<ClientInfoProps> = ({ id, avatar, name, status, uptime: uptimeMs, games, onManageBot, onDelete }) => {
     const maxGamesToShow = 10;
-    const additionalGamesCount = client.games.length - maxGamesToShow;
-    const [uptime, setUptime] = useState(formatUptime(client.uptime));
+    const safeGames = games ?? [];
+    const additionalGamesCount = Math.max(0, safeGames.length - maxGamesToShow);
+    const [uptime, setUptime] = useState(formatUptime(uptimeMs ?? 0));
+    const statusLower = (status ?? 'offline').toLowerCase();
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setUptime(formatUptime(client.uptime));
+            setUptime(formatUptime(uptimeMs ?? 0));
         }, 1000);
-
         return () => clearInterval(interval);
-    }, [client.uptime]);
+    }, [uptimeMs]);
 
     return (
-        <Link className='w-full max-w-md flex' to={`/client/${client.id}/dashboard`}>
+        <div className='w-full max-w-md flex'>
             <Card className="w-full max-w-md p-4 flex flex-col border shadow-lg">
                 <div className="flex items-start gap-4">
                     <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
-                        <img src={client.avatar} className="text-gray-500 text-sm rounded-sm shadow-lg"></img>
+                        <img src={avatar || 'https://avatars.fastly.steamstatic.com/default_full.jpg'} className="text-gray-500 text-sm rounded-sm shadow-lg" />
                     </div>
                     <div className="flex-1">
-                        <CardTitle className={`text-lg line-clamp-1 `} title={client.name}>{client.name}</CardTitle>
-                        <CardDescription className={getStatusColor(client.status.toLocaleLowerCase())}> {client.status}</CardDescription>
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                                <CardTitle className={`text-lg line-clamp-1`} title={name || 'Cliente'}>{name || 'Cliente'}</CardTitle>
+                                <CardDescription className={getStatusColor(statusLower)}> {status || 'offline'}</CardDescription>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button size="sm" variant="outline" asChild>
+                                    <Link href={`/client/${id}/dashboard`}>
+                                        <span className="inline-flex items-center">
+                                            <LayoutDashboard className="w-4 h-4 mr-1" />
+                                            Dashboard
+                                        </span>
+                                    </Link>
+                                </Button>
+                                <Button size="sm" onClick={onManageBot}>
+                                    <Settings className="w-4 h-4 mr-1" />
+                                    Configurar
+                                </Button>
+                                {onDelete && (
+                                    <Button size="sm" variant="destructive" onClick={onDelete}>Remover</Button>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 whitespace-nowrap">
                         <span>{uptime}</span>
                     </div>
                 </div>
                 <p className="font-semibold mb-2 mt-4">Jogos Ativos:</p>
-                <div className="flex gap-1">
-                    {client.games.slice(0, maxGamesToShow).map((game, index) => (
+                <div className="flex gap-1 flex-wrap">
+                    {safeGames.slice(0, maxGamesToShow).map((game, index) => (
                         <img
                             key={index}
                             className="w-8 h-8 bg-gray-200 rounded-md shadow-lg flex items-center justify-center text-xs text-gray-600"
                             src={game.logo}
                             alt={game.name}
-                        >
-                        </img>
+                        />
                     ))}
                     {additionalGamesCount > 0 && (
                         <div className="w-8 h-8 flex items-center justify-center text-lg font-bold text-white">
@@ -90,9 +113,7 @@ const ClientInfo: React.FC<ClientInfoProps> = ({ client }) => {
                     )}
                 </div>
             </Card>
-        </Link>
-
-
+        </div>
     );
 };
 

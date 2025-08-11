@@ -3,13 +3,15 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { useClients } from '../hooks/useClients';
+import { X } from 'lucide-react';
 
 interface BotControlFormProps {
   clientId: string;
   onSuccess?: () => void;
+  onClose?: () => void;
 }
 
-export const BotControlForm = ({ clientId, onSuccess }: BotControlFormProps) => {
+export const BotControlForm = ({ clientId, onSuccess, onClose }: BotControlFormProps) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
@@ -117,10 +119,19 @@ export const BotControlForm = ({ clientId, onSuccess }: BotControlFormProps) => 
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Controle do Bot</CardTitle>
-        <CardDescription>
-          Configure e inicie o bot Steam para o cliente {clientId.slice(0, 8)}...
-        </CardDescription>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <CardTitle>Controle do Bot</CardTitle>
+            <CardDescription>
+              Configure e inicie o bot Steam para o cliente {clientId.slice(0, 8)}...
+            </CardDescription>
+          </div>
+          {onClose && (
+            <Button aria-label="Fechar" size="icon" variant="ghost" onClick={onClose}>
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {error && (
@@ -224,6 +235,15 @@ export const BotControlForm = ({ clientId, onSuccess }: BotControlFormProps) => 
               className="flex-1"
             >
               {isStarting ? 'Iniciando...' : 'Iniciar Bot'}
+            </Button>
+            
+            <Button 
+              type="button" 
+              variant="secondary"
+              onClick={onClose}
+              className="flex-1"
+            >
+              Cancelar
             </Button>
             
             <Button 

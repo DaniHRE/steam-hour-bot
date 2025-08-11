@@ -5,14 +5,22 @@ import SteamClientManager from './core/SteamClientManager';
 
 const cors = require('cors');
 
-// Create an Express app
 const app = express();
 app.use(express.json());
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim())) || [
+  'http://localhost:3000',
+];
 
 app.use(cors({
-    origin: `http://localhost:5173`
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    if (!origin) return callback(null, true); // non-browser or same-origin
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
 }));
+app.options('*', cors());
 
 const steamClientManager = new SteamClientManager();
 

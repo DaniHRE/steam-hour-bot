@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  AtomIcon,
   Home,
   LogOut,
 } from 'lucide-react';
@@ -17,19 +16,19 @@ import {
 interface NavItem {
   title: string;
   icon: React.ElementType;
-  id: string;
+  href: string;
 }
 
 const navItems: NavItem[] = [
   {
     title: 'Home',
     icon: Home,
-    id: 'home',
+    href: '/',
   }
 ];
 
 export default function AppSidebar() {
-  const [activeItem, setActiveItem] = React.useState<string>('home');
+  const [activeItem, setActiveItem] = React.useState<string>('/');
 
   return (
     <div className="flex flex-col justify-between min-h-screen w-[72px] bg-background p-4 border-r border-border">
@@ -43,14 +42,14 @@ export default function AppSidebar() {
 
       <nav className="flex flex-col gap-8 items-center mt-4">
         {navItems.map((item) => {
-          const isActive = activeItem === item.id;
+          const isActive = activeItem === item.href;
 
           return (
-            <Tooltip key={item.id} delayDuration={0}>
+            <Tooltip key={item.href} delayDuration={0}>
               <TooltipTrigger asChild>
                 <div
                   className="relative"
-                  onClick={() => setActiveItem(item.id)}
+                  onClick={() => setActiveItem(item.href)}
                 >
                   <Button
                     variant="ghost"
